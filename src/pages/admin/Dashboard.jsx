@@ -116,6 +116,9 @@ const Dashboard = () => {
     eventId: ''
   });
 
+  const isPermissionDenied = (error) =>
+    error?.code === 'permission-denied' || error?.code === 'firestore/permission-denied';
+
   // Real-time Event Monitoring
   useEffect(() => {
     const eventsCollection = collection(db, 'heroEvents');
@@ -226,9 +229,19 @@ const Dashboard = () => {
     // Registrations
     const registrationsQuery = query(collection(db, 'registrations'), orderBy('createdAt', 'desc'));
     unsubscribers.push(
-      onSnapshot(registrationsQuery, (snapshot) => {
-        setRegistrations(snapshot.docs.map((d) => ({ id: d.id, ...d.data() })));
-      })
+      onSnapshot(
+        registrationsQuery,
+        (snapshot) => {
+          setRegistrations(snapshot.docs.map((d) => ({ id: d.id, ...d.data() })));
+        },
+        (error) => {
+          if (isPermissionDenied(error)) {
+            setRegistrations([]);
+            return;
+          }
+          console.error('[registrations]', error);
+        }
+      )
     );
 
     return () => unsubscribers.forEach((unsub) => unsub());
@@ -240,26 +253,33 @@ const Dashboard = () => {
     const collections = ['tickets', 'news', 'events', 'speakers', 'team', 'gallery', 'videos', 'sponsors', 'registrations'];
 
     const unsubscribes = collections.map((collectionName) => {
-      return onSnapshot(collection(db, collectionName), (snapshot) => {
-        const counts = {};
+      return onSnapshot(
+        collection(db, collectionName),
+        (snapshot) => {
+          const counts = {};
 
-        snapshot.docs.forEach((doc) => {
-          const eventId = doc.data().eventId;
-          if (eventId) {
-            if (!counts[eventId]) counts[eventId] = {};
-            if (!counts[eventId][collectionName]) counts[eventId][collectionName] = 0;
-            counts[eventId][collectionName]++;
-          }
-        });
-
-        setLinkedItemsCounts((prev) => {
-          const newCounts = { ...prev };
-          Object.keys(counts).forEach((eventId) => {
-            newCounts[eventId] = { ...(newCounts[eventId] || {}), ...counts[eventId] };
+          snapshot.docs.forEach((doc) => {
+            const eventId = doc.data().eventId;
+            if (eventId) {
+              if (!counts[eventId]) counts[eventId] = {};
+              if (!counts[eventId][collectionName]) counts[eventId][collectionName] = 0;
+              counts[eventId][collectionName]++;
+            }
           });
-          return newCounts;
-        });
-      });
+
+          setLinkedItemsCounts((prev) => {
+            const newCounts = { ...prev };
+            Object.keys(counts).forEach((eventId) => {
+              newCounts[eventId] = { ...(newCounts[eventId] || {}), ...counts[eventId] };
+            });
+            return newCounts;
+          });
+        },
+        (error) => {
+          if (isPermissionDenied(error)) return;
+          console.error(`[linkedCount/${collectionName}]`, error);
+        }
+      );
     });
 
     return () => unsubscribes.forEach((unsub) => unsub());

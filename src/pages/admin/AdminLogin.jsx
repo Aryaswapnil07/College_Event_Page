@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import { auth } from '../../firebase/config';
+import { isAdminUser } from '../../firebase/admin';
 import { useNavigate } from 'react-router-dom';
 
 const AdminLogin = () => {
@@ -17,10 +18,17 @@ const AdminLogin = () => {
 
     try {
       await signInWithEmailAndPassword(auth, email.trim(), password);
+
+      if (!isAdminUser(auth.currentUser)) {
+        await auth.signOut();
+        throw new Error('admin/not-authorized');
+      }
+
       navigate('/admin');
     } catch (err) {
-      console.error("Firebase Auth Error:", err.code);
-      switch (err.code) {
+      const code = err.code || err.message;
+      console.error("Firebase Auth Error:", code);
+      switch (code) {
         case 'auth/user-not-found':
           setError('No account found with this email.');
           break;
@@ -30,8 +38,11 @@ const AdminLogin = () => {
         case 'auth/invalid-email':
           setError('Invalid email format.');
           break;
+        case 'admin/not-authorized':
+          setError('This account is not allowed to access the admin dashboard.');
+          break;
         default:
-          setError(`Error: ${err.code.replace('auth/', '').replace(/-/g, ' ')}`);
+          setError(`Error: ${(code || 'unknown').replace('auth/', '').replace(/-/g, ' ')}`);
       }
     } finally {
       setLoading(false);

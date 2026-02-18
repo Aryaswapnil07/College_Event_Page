@@ -6,6 +6,7 @@ import {
   Navigate,
 } from "react-router-dom";
 import { auth } from "./firebase/config";
+import { isAdminUser } from "./firebase/admin";
 
 // Component Imports
 import Header from "./components/Header";
@@ -92,6 +93,7 @@ const App = () => {
   const [user, setUser] = useState(null);
   const [authReady, setAuthReady] = useState(false);
   const [minTimePassed, setMinTimePassed] = useState(false);
+  const isAdmin = isAdminUser(user);
 
   useEffect(() => {
     // 1️⃣ Firebase Auth Listener
@@ -125,12 +127,12 @@ const App = () => {
 
           <Route
             path="/login"
-            element={user ? <Navigate to="/admin" /> : <AdminLogin />}
+            element={isAdmin ? <Navigate to="/admin" /> : <AdminLogin />}
           />
 
           <Route
             path="/admin"
-            element={user ? <Dashboard /> : <Navigate to="/login" />}
+            element={isAdmin ? <Dashboard /> : <Navigate to="/login" />}
           />
           <Route path="/register" element={<JuniorRegistration />} />
         </Routes>
