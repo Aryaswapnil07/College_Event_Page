@@ -85,7 +85,7 @@ const Dashboard = () => {
     name: '', logo: '', website: '', tier: 'silver', order: 1, eventId: ''
   });
 
-  // Real-time Event Monitoring
+  // ── Real-time: Event Monitor ──
   useEffect(() => {
     const eventsCollection = collection(db, 'heroEvents');
     const now = new Date();
@@ -157,8 +157,16 @@ const Dashboard = () => {
       )
     );
     unsubscribers.push(
-      onSnapshot(registrationsQuery, (snapshot) => {
-        setRegistrations(snapshot.docs.map((d) => ({ id: d.id, ...d.data() })));
+      onSnapshot(query(collection(db, 'registrations'), orderBy('createdAt', 'desc')), (s) => {
+        const regs = s.docs.map((d) => ({ id: d.id, ...d.data() }));
+        setRegistrations(regs);
+        setStats({
+          total:    regs.length,
+          pending:  regs.filter((r) => r.status === 'pending').length,
+          verified: regs.filter((r) => r.status === 'verified').length,
+          rejected: regs.filter((r) => r.status === 'rejected').length,
+          revenue:  regs.filter((r) => r.status === 'verified').length * 500,
+        });
       })
     );
 
@@ -167,33 +175,28 @@ const Dashboard = () => {
 
   // ── Linked Item Counts ──
   useEffect(() => {
-    // Include all collections that might be linked to an event
-    const collections = ['tickets', 'news', 'events', 'speakers', 'team', 'gallery', 'videos', 'sponsors', 'registrations'];
-
-    const unsubscribes = collections.map((collectionName) => {
-      return onSnapshot(collection(db, collectionName), (snapshot) => {
+    const cols = ['tickets','news','events','speakers','team','gallery','videos','sponsors','registrations'];
+    const unsubscribes = cols.map((colName) =>
+      onSnapshot(collection(db, colName), (snapshot) => {
         const counts = {};
-
-        snapshot.docs.forEach((doc) => {
-          const eventId = doc.data().eventId;
+        snapshot.docs.forEach((d) => {
+          const eventId = d.data().eventId;
           if (eventId) {
             if (!counts[eventId]) counts[eventId] = {};
-            if (!counts[eventId][collectionName]) counts[eventId][collectionName] = 0;
-            counts[eventId][collectionName]++;
+            if (!counts[eventId][colName]) counts[eventId][colName] = 0;
+            counts[eventId][colName]++;
           }
         });
-
         setLinkedItemsCounts((prev) => {
-          const newCounts = { ...prev };
-          Object.keys(counts).forEach((eventId) => {
-            newCounts[eventId] = { ...(newCounts[eventId] || {}), ...counts[eventId] };
+          const next = { ...prev };
+          Object.keys(counts).forEach((eid) => {
+            next[eid] = { ...(next[eid] || {}), ...counts[eid] };
           });
-          return newCounts;
+          return next;
         });
-      });
-    });
-
-    return () => unsubscribes.forEach((unsub) => unsub());
+      })
+    );
+    return () => unsubscribes.forEach((u) => u());
   }, []);
 
   // ── Registration: Verify / Reject ──

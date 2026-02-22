@@ -171,7 +171,8 @@ const JuniorRegistration = () => {
           {/* Notice */}
           <div className="bg-amber-500/10 border border-amber-500/30 rounded-xl p-4">
             <p className="text-amber-400 text-xs leading-relaxed">
-              🔔 If you don't receive your pass within 24 hours, please contact the event coordinators directly.
+              🔔 If you don't receive your pass within 24 hours, please contact the event coordinators directly. <br /> <a href="mailto:team.eventdesk@gmail.com?subject=Support Request" className="inline-block my-2 px-5 py-1 bg-green-500 text-white no-underline rounded-md hover:bg-red-500 transition-colors">Contact Us</a>
+
             </p>
           </div>
 
@@ -193,14 +194,14 @@ const JuniorRegistration = () => {
       {/* Navigation */}
       <nav className="p-6 flex justify-between items-center max-w-7xl mx-auto border-b border-zinc-800/50">
         <div className="flex items-center gap-2">
-          <div className="w-8 h-8 bg-red-600 rounded-lg flex items-center justify-center font-bold text-white">F</div>
+          <div className="w-8 h-8 bg-red-600 rounded-lg flex items-center justify-center font-bold text-white overflow-hidden rounded-[20px]"><img src="./favicon.png" alt="" /></div>
           <span className="font-bold tracking-tight text-xl text-white">
-            FRESHERS<span className="text-red-600">25</span>
+            FRESHERS<span className="text-red-600"> 26</span>
           </span>
         </div>
         <button
           onClick={() => navigate('/')}
-          className="text-sm text-zinc-400 hover:text-white transition-colors border border-zinc-800 px-4 py-2 rounded-full bg-zinc-900/50"
+          className="text-sm text-zinc-400 hover:text-red-500 transition-colors border border-zinc-800 px-4 py-2 rounded-full bg-zinc-900/50"
         >
           Back to Event
         </button>
@@ -215,9 +216,10 @@ const JuniorRegistration = () => {
               Student Registration
             </span>
             <h1 className="text-5xl lg:text-6xl font-extrabold text-white mt-6 leading-tight">
-              Join the <span className="text-red-600">Cultural</span> Night of the Year.
+              Join the <span className="text-red-600">Fresher</span> Night of the Year.
             </h1>
-            <p className="text-zinc-400 mt-6 text-lg leading-relaxed max-w-md">
+            <p className="text-zinc-400 mt-6 text-lg leading-relaxed max-w-md ">
+              <img src="./attention.png" alt="" className="inline-block h-auto w-30 rounded-md p-2 object-contain" /> <br />
               Complete your registration to secure your digital pass. Make sure your university details are correct as per your ID card.
             </p>
           </div>
@@ -260,7 +262,8 @@ const JuniorRegistration = () => {
               <input
                 name="name"
                 type="text"
-                placeholder="John Doe"
+                pattern="[A-Za-z ]+"
+                placeholder="Prem"
                 required
                 onChange={handleChange}
                 className="w-full bg-zinc-950 border border-zinc-800 rounded-xl p-3.5 text-white placeholder-zinc-600 focus:ring-2 focus:ring-red-600/50 focus:border-red-600 outline-none transition-all"
@@ -274,7 +277,7 @@ const JuniorRegistration = () => {
                 <input
                   name="email"
                   type="email"
-                  placeholder="john@university.edu"
+                  placeholder="student@geck.edu"
                   required
                   onChange={handleChange}
                   className="w-full bg-zinc-950 border border-zinc-800 rounded-xl p-3.5 text-white placeholder-zinc-600 focus:border-red-600 outline-none transition-all"
@@ -286,6 +289,7 @@ const JuniorRegistration = () => {
                   name="contact"
                   type="tel"
                   placeholder="+91 00000 00000"
+                  pattern="[0-9]{10}"
                   required
                   onChange={handleChange}
                   className="w-full bg-zinc-950 border border-zinc-800 rounded-xl p-3.5 text-white placeholder-zinc-600 focus:border-red-600 outline-none transition-all"
@@ -321,6 +325,7 @@ const JuniorRegistration = () => {
                   name="rollNo"
                   type="text"
                   placeholder="21XXXX"
+                  pattern="([0-9]{5}|[A-Za-z]-[0-9]{5})"
                   required
                   onChange={handleChange}
                   className="w-full bg-zinc-950 border border-zinc-800 rounded-xl p-3.5 text-white placeholder-zinc-600 focus:border-red-600 outline-none transition-all"
@@ -332,6 +337,7 @@ const JuniorRegistration = () => {
                   name="regNo"
                   type="text"
                   placeholder="REG-XXXX"
+                  pattern="[0-9]{11}"
                   required
                   onChange={handleChange}
                   className="w-full bg-zinc-950 border border-zinc-800 rounded-xl p-3.5 text-white placeholder-zinc-600 focus:border-red-600 outline-none transition-all"

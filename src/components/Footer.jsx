@@ -1,5 +1,6 @@
 import React from "react";
 
+
 const Footer = () => {
   return (
     <footer className="relative bg-gradient-to-b from-black via-gray-950 to-black text-gray-400">
@@ -69,14 +70,15 @@ const Footer = () => {
                   ></i>
                 </div>
               </a>
+              <a href="mailto:team.eventdesk@gmail.com?subject=Support Request" className="inline-block my-2 px-5 py-1 bg-red-500 text-white no-underline rounded-md ">Contact Us</a>
             </div>
 
             {/* CTA Button */}
             <a
-              href="#tickets"
+              href="/register"
               className="inline-block mt-4 hover:scale-105 transition duration-300"
             >
-              <img src="/ticket.png" alt="" srcset="" className="h-14 w-30" />
+              <img src="/ticket.png" alt="" srcset="" className="h-14 w-30"/>
             </a>
           </div>
         </div>
