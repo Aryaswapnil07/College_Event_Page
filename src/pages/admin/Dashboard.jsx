@@ -39,6 +39,7 @@ const Dashboard = () => {
   const [teamMembers, setTeamMembers] = useState([]);
   const [galleryImages, setGalleryImages] = useState([]);
   const [sponsors, setSponsors] = useState([]);
+  const [contactQueries, setContactQueries] = useState([]);
 
   // Registrations
   const [registrations, setRegistrations] = useState([]);
@@ -168,6 +169,11 @@ const Dashboard = () => {
           revenue:  regs.filter((r) => r.status === 'verified').length * 500,
         });
       })
+    );
+    unsubscribers.push(
+      onSnapshot(query(collection(db, 'contactQueries'), orderBy('createdAt', 'desc')), (s) =>
+        setContactQueries(s.docs.map((d) => ({ id: d.id, ...d.data() })))
+      )
     );
 
     return () => unsubscribers.forEach((u) => u());
@@ -581,6 +587,12 @@ const Dashboard = () => {
     catch (err) { alert('Error: ' + err.message); }
   };
 
+  const handleDeleteContactQuery = async (id) => {
+    if (!window.confirm('Delete this query?')) return;
+    try { await deleteDoc(doc(db, 'contactQueries', id)); alert('🗑️ Query Deleted!'); }
+    catch (err) { alert('Error: ' + err.message); }
+  };
+
   // ── Cancel Edit ──
   const handleCancelEdit = () => {
     setEditMode(false); setEditingId(null); setSelectedRegistration(null);
@@ -699,6 +711,7 @@ const Dashboard = () => {
               {[
                 { id: 'heroEvents', label: '🎯 Hero Events' },
                 { id: 'registrations', label: '📝 Registrations' },
+                { id: 'queries', label: '💬 Queries' },
                 { id: 'tickets', label: '🎫 Tickets' },
                 { id: 'news', label: '📰 News' },
                 { id: 'events', label: '⏰ Timeline' },
@@ -713,6 +726,9 @@ const Dashboard = () => {
                   {tab.label}
                   {tab.id === 'registrations' && stats.pending > 0 && (
                     <span className="ml-2 bg-red-500 text-white text-xs px-2 py-1 rounded-full">{stats.pending}</span>
+                  )}
+                  {tab.id === 'queries' && contactQueries.length > 0 && (
+                    <span className="ml-2 bg-red-500 text-white text-xs px-2 py-1 rounded-full">{contactQueries.length}</span>
                   )}
                 </button>
               ))}
@@ -827,6 +843,44 @@ const Dashboard = () => {
                     </div>
                   </div>
                 </>
+              )}
+
+              {/* ── CONTACT QUERIES TAB ── */}
+              {activeTab === 'queries' && (
+                <div className="bg-white/5 border border-white/10 rounded-3xl p-8">
+                  <h3 className="text-xl font-bold mb-4">Contact Queries ({contactQueries.length})</h3>
+                  <div className="space-y-4">
+                    {contactQueries.map((q) => (
+                      <div key={q.id} className="bg-black/40 border border-white/10 rounded-xl p-6">
+                        <div className="flex justify-between items-start gap-4 mb-3">
+                          <div>
+                            <h4 className="font-bold text-lg">{q.name || 'Anonymous'}</h4>
+                            <p className="text-xs text-gray-500">{formatDate(q.createdAt)}</p>
+                          </div>
+                          <button
+                            onClick={() => handleDeleteContactQuery(q.id)}
+                            className="bg-red-500/20 hover:bg-red-500 text-red-400 hover:text-white px-4 py-2 rounded-lg text-sm font-bold transition-all"
+                          >
+                            🗑️ Delete
+                          </button>
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm mb-4">
+                          <div><span className="text-gray-500">Email:</span> <span className="text-gray-200">{q.email || 'N/A'}</span></div>
+                          <div><span className="text-gray-500">Phone:</span> <span className="text-gray-200">{q.phone || 'N/A'}</span></div>
+                        </div>
+
+                        <div className="p-4 bg-white/5 rounded-lg border border-white/5">
+                          <p className="text-gray-300 whitespace-pre-wrap">{q.message || 'No message provided.'}</p>
+                        </div>
+                      </div>
+                    ))}
+
+                    {contactQueries.length === 0 && (
+                      <p className="text-center text-gray-500 py-12">No contact queries yet</p>
+                    )}
+                  </div>
+                </div>
               )}
 
               {/* Payment Screenshot Modal */}
