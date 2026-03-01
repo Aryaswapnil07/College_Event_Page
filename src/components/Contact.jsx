@@ -1,17 +1,47 @@
 import React, { useState } from "react";
+import { addDoc, collection, serverTimestamp } from "firebase/firestore";
+import { db } from "../firebase/config";
 
 const Contact = () => {
   const [formData, setFormData] = useState({
     name: "",
     email: "",
+    phone: "",
     message: "",
   });
+  const [submitting, setSubmitting] = useState(false);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log("Form Submitted:", formData);
-    alert("Thank you! Your message has been sent.");
-    setFormData({ name: "", email: "", message: "" });
+
+    const payload = {
+      name: formData.name.trim(),
+      email: formData.email.trim(),
+      phone: formData.phone.trim(),
+      message: formData.message.trim(),
+    };
+
+    if (!payload.email && !payload.phone) {
+      alert("Please enter at least an email or a phone number.");
+      return;
+    }
+
+    setSubmitting(true);
+    try {
+      await addDoc(collection(db, "contactQueries"), {
+        ...payload,
+        createdAt: serverTimestamp(),
+      });
+      alert(
+        "Your query has been submitted. Thank you! Our team will contact you within a few hours."
+      );
+      setFormData({ name: "", email: "", phone: "", message: "" });
+    } catch (error) {
+      console.error("Contact form submit failed:", error);
+      alert("Failed to submit your query. Please try again.");
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -67,17 +97,31 @@ const Contact = () => {
 
             {/* Email */}
             <div>
-              <label className="block text-sm mb-1 text-white">Email</label>
+              <label className="block text-sm mb-1 text-white">Email (optional)</label>
               <input
                 type="email"
-                pattern="[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$"
-                required
                 value={formData.email}
                 onChange={(e) =>
                   setFormData({ ...formData, email: e.target.value })
                 }
                 className="w-full bg-[#21212173] border border-gray-400 rounded px-3 py-2 text-gray-100 focus:border-red-500 focus:ring-2 focus:ring-red-900 outline-none transition"
               />
+            </div>
+
+            {/* Phone */}
+            <div>
+              <label className="block text-sm mb-1 text-white">Phone (optional)</label>
+              <input
+                type="tel"
+                value={formData.phone}
+                onChange={(e) =>
+                  setFormData({ ...formData, phone: e.target.value })
+                }
+                className="w-full bg-[#21212173] border border-gray-400 rounded px-3 py-2 text-gray-100 focus:border-red-500 focus:ring-2 focus:ring-red-900 outline-none transition"
+              />
+              <p className="text-xs text-gray-300 mt-1">
+                Provide at least one contact method: email or phone.
+              </p>
             </div>
 
             {/* Message */}
@@ -96,9 +140,10 @@ const Contact = () => {
 
             <button
               type="submit"
+              disabled={submitting}
               className="w-full bg-red-500 hover:bg-red-600 text-white py-2 rounded text-lg font-semibold transition"
             >
-              Send Message
+              {submitting ? "Submitting..." : "Send Message"}
             </button>
           </form>
 
