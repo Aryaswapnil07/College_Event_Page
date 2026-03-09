@@ -34,6 +34,13 @@ const JuniorRegistration = () => {
     if (errorMsg) setErrorMsg('');
   };
 
+  // NUMERIC-ONLY HANDLER (for Roll No & Reg No)
+  const handleNumericChange = (e) => {
+    const value = e.target.value.replace(/\D/g, ''); // strip non-digits
+    setFormData({ ...formData, [e.target.name]: value });
+    if (errorMsg) setErrorMsg('');
+  };
+
   // FIREBASE SUBMISSION WITH DUPLICATE CHECK
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -60,18 +67,18 @@ const JuniorRegistration = () => {
 
       // 2. SAVE TO FIREBASE — field names match Dashboard expectations
       await addDoc(registrationsRef, {
-        fullName:        formData.name,      // Dashboard reads fullName
+        fullName:        formData.name,
         email:           formData.email,
-        phone:           formData.contact,   // Dashboard reads phone
+        phone:           formData.contact,
         branch:          formData.branch,
-        collegeRollNo:   formData.rollNo,    // Dashboard reads collegeRollNo
-        registrationNo:  formData.regNo,     // Dashboard reads registrationNo
-        gender:          '',                 // optional — leave blank
-        utrNumber:       '',                 // optional — filled later if needed
+        collegeRollNo:   formData.rollNo,
+        registrationNo:  formData.regNo,
+        gender:          '',
+        utrNumber:       '',
         profileUrl:      '',
         paymentUrl:      '',
         role:            'junior',
-        status:          'pending',          // pending → admin verifies → email sent
+        status:          'pending',
         createdAt:       serverTimestamp(),
       });
 
@@ -93,7 +100,7 @@ const JuniorRegistration = () => {
           {/* Animated checkmark */}
           <div className="relative mx-auto w-24 h-24">
             <div className="absolute inset-0 bg-green-500/20 rounded-full animate-ping" />
-            <div className="relative w-24 h-24 bg-gradienta-to-br from-green-500 to-emerald-600 rounded-full flex items-center justify-center shadow-[0_0_60px_rgba(34,197,94,0.4)]">
+            <div className="relative w-24 h-24 bg-gradient-to-br from-green-500 to-emerald-600 rounded-full flex items-center justify-center shadow-[0_0_60px_rgba(34,197,94,0.4)]">
               <svg className="w-12 h-12 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
               </svg>
@@ -317,29 +324,37 @@ const JuniorRegistration = () => {
               </select>
             </div>
 
-            {/* Roll No + Reg No */}
+            {/* Roll No + Reg No — numeric keypad on mobile */}
             <div className="grid md:grid-cols-2 gap-5">
+
+              {/* Roll Number */}
               <div className="space-y-2">
                 <label className="text-sm font-medium text-zinc-300">Roll No.</label>
                 <input
                   name="rollNo"
-                  type="text"
-                  placeholder="21XXXX"
-                  pattern="([0-9]{5}|[A-Za-z]-[0-9]{5})"
+                  type="text"          /* keeps it a text field (no spinners) */
+                  inputMode="numeric"  /* opens numeric keypad on mobile       */
+                  pattern="([0-9]{5}|[A-Za-z]-[0-9]{5})"     /* HTML5 validation — digits only        */
+                  placeholder="210001"
                   required
-                  onChange={handleChange}
+                  value={formData.rollNo}
+                  onChange={handleNumericChange}
                   className="w-full bg-zinc-950 border border-zinc-800 rounded-xl p-3.5 text-white placeholder-zinc-600 focus:border-red-600 outline-none transition-all"
                 />
               </div>
+
+              {/* Registration Number */}
               <div className="space-y-2">
                 <label className="text-sm font-medium text-zinc-300">Registration No.</label>
                 <input
                   name="regNo"
-                  type="text"
-                  placeholder="REG-XXXX"
-                  pattern="[0-9]{11}"
+                  type="text"          /* keeps it a text field (no spinners) */
+                  inputMode="numeric"  /* opens numeric keypad on mobile       */
+                  pattern="0-9]{11}"     /* HTML5 validation — digits only        */
+                  placeholder="20250001"
                   required
-                  onChange={handleChange}
+                  value={formData.regNo}
+                  onChange={handleNumericChange}
                   className="w-full bg-zinc-950 border border-zinc-800 rounded-xl p-3.5 text-white placeholder-zinc-600 focus:border-red-600 outline-none transition-all"
                 />
               </div>
